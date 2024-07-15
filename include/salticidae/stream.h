@@ -35,6 +35,7 @@ namespace salticidae {
 template <size_t N, typename T> class Blob;
 using uint256_t = Blob<256, uint64_t>;
 
+/// This consists of 2 components, a byte array(Vec<u8>) and an offset.
 class DataStream {
   bytearray_t buffer;
   size_t offset;
@@ -85,6 +86,8 @@ public:
 
   size_t size() const { return buffer.size() - offset; }
 
+  /// If the first input's type is integer, then add the d into the buffer
+  /// and return self's address for chain expression. If not, ignore the template.
   template <typename T>
   typename std::enable_if<std::is_integral<T>::value, DataStream &>::type
   operator<<(T d) {
@@ -98,21 +101,27 @@ public:
     buffer.insert(buffer.end(), d.begin(), d.end());
   }
 
+  /// Append a string array into the buffer.
   DataStream &operator<<(const std::string &d) {
     put_data(d);
     return *this;
   }
+
+  /// Append a bytearray into the buffer.
   DataStream &operator<<(const bytearray_t &d) {
     put_data(d);
     return *this;
   }
 
+  /// Append a range into the buffer.
   void put_data(const uint8_t *begin, const uint8_t *end) {
     size_t len = end - begin;
     buffer.resize(buffer.size() + len);
     memmove(&*buffer.end() - len, begin, len);
   }
 
+  /// Get the byte at the location (offset + len), if overflow,
+  /// throw a std::ios_base::failure.
   const uint8_t *get_data_inplace(size_t len) {
     auto res = (uint8_t *)&*(buffer.begin() + offset);
     offset += len;
@@ -123,6 +132,8 @@ public:
     return res;
   }
 
+  /// If the input's type is not integer, serialize the input value and return
+  /// the address of the self obj for chain expression.
   template <typename T>
   typename std::enable_if<!std::is_integral<T>::value, DataStream &>::type
   operator<<(const T &obj) {

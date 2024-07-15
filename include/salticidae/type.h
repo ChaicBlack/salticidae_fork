@@ -48,6 +48,7 @@ namespace salticidae {
 const auto _1 = std::placeholders::_1;
 const auto _2 = std::placeholders::_2;
 
+/// Vec<u8>
 using bytearray_t = std::vector<uint8_t>;
 using mutex_lg_t = std::lock_guard<std::mutex>;
 using mutex_ul_t = std::unique_lock<std::mutex>;
