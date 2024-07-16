@@ -146,6 +146,8 @@ public:
     return *this;
   }
 
+  /// Read an integer from the stream. If it's not an integer, ignore the
+  /// template.
   template <typename T>
   typename std::enable_if<std::is_integral<T>::value, DataStream &>::type
   operator>>(T &d) {
@@ -158,6 +160,7 @@ public:
     return *this;
   }
 
+  /// Read a non-integer from the stream.
   template <typename T>
   typename std::enable_if<!std::is_integral<T>::value, DataStream &>::type
   operator>>(T &obj) {
@@ -165,23 +168,30 @@ public:
     return *this;
   }
 
+  /// Get a string contains all the data converted to hex format.
   std::string get_hex() const {
     char buf[3];
     DataStream s;
     for (auto it = buffer.begin() + offset; it != buffer.end(); it++) {
+      // convert *it to hex with width 2 (which 02 means) and store it
+      // in the buf.
       sprintf(buf, "%02x", *it);
       s.put_data((uint8_t *)buf, (uint8_t *)buf + 2);
     }
     return std::string(s.buffer.begin(), s.buffer.end());
   }
 
+  /// Convert a hex string to a byte array and store it in the buffer.
+  /// If there are parsing problems, throw std::invalid_argument.
   void load_hex(const std::string &hex_str) {
     size_t len = hex_str.size();
     const char *p;
     uint8_t *bp;
     unsigned int tmp;
+    // hex number width must be times of 2
     if (len & 1)
       throw std::invalid_argument("not a valid hex string");
+    // 2 hex number represent 1 byte
     buffer.resize(len >> 1);
     offset = 0;
     for (p = hex_str.data(), bp = &*buffer.begin(); p < hex_str.data() + len;
