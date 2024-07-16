@@ -202,12 +202,18 @@ public:
     }
   }
 
+  // Type conversion operator overload, called when need to convert a DataStream
+  // object to bytearray_t and the DataStream object is a lvalue.
   operator bytearray_t() const & {
     return bytearray_t(buffer.begin() + offset, buffer.end());
   }
 
+  // Type conversion operator overload, called when need to convert a DataStream
+  // object to bytearray_t and the DataStream object is a rvalue.
   operator bytearray_t() && { return buffer; }
 
+  // Type conversion operator overload, called when need to convert a DataStream
+  // object to std::string and the DataStream object is a lvalue.
   operator std::string() const & {
     return std::string(buffer.begin() + offset, buffer.end());
   }
